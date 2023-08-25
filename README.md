@@ -33,4 +33,4 @@
 
 **Ссылка:**
 
-[https://ageorga.github.io/mesto]
+[https://ageorga.github.io/mesto-react]

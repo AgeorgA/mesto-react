@@ -11,8 +11,8 @@ function AddPlacePopup(...props) {
   }, [props.isOpen]);
 
   function handleChange(e) {
-    let value = e.target.value;
-    let inputName = e.target.name;
+    const value = e.target.value;
+    const inputName = e.target.name;
     if (inputName === 'name') {
       setName(value);
     } else if (inputName === 'link') {

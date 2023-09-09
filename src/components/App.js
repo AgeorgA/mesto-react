@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Header from './Header';
 import Main from './Main';
 import Footer from './Footer';
@@ -7,12 +7,28 @@ import EditProfilePopup from './EditProfilePopup';
 import AddPlacePopup from './AddPlacePopup';
 import ImagePopup from './ImagePopup';
 import ConfirmDeletePopup from './ConfirmDeletePopup';
+import api from '../utils/Api';
+import { CurrentUserContext } from '../contexts/CurrentUserContext';
 
 function App() {
-  const [isEditProfilePopupOpen, setIsEditProfilePopupOpen] = React.useState(false);
-  const [isAddPlacePopupOpen, setIsAddPlacePopupOpen] = React.useState(false);
-  const [isEditAvatarPopupOpen, setIsEditAvatarPopupOpen] = React.useState(false);
-  const [isConfirmDelCardPopupOpen, setIsConfirmDelCardPopupOpen] = React.useState(false);
+  const [isEditProfilePopupOpen, setIsEditProfilePopupOpen] = useState(false);
+  const [isAddPlacePopupOpen, setIsAddPlacePopupOpen] = useState(false);
+  const [isEditAvatarPopupOpen, setIsEditAvatarPopupOpen] = useState(false);
+  const [isConfirmDelCardPopupOpen, setIsConfirmDelCardPopupOpen] = useState(false);
+  const [currentUser, setCurrentUser] = useState({});
+  const [selectedCard, setSelectedCard] = useState(null);
+  const [cards, setCards] = useState([]);
+
+  useEffect(() => {
+    Promise.all([api.getUserInfo()], api.getInitialCards())
+      .then(([userInfo, initialCards]) => {
+        setCurrentUser(userInfo);
+        setCards(initialCards);
+      })
+      .catch(err => {
+        console.log(err);
+      });
+  }, []);
 
   const handleEditProfileClick = () => {
     setIsEditProfilePopupOpen(true);
@@ -38,111 +54,103 @@ function App() {
     setSelectedCard(null);
   };
 
-  const [selectedCard, setSelectedCard] = React.useState(null);
   const handleCardClick = data => {
     setSelectedCard(data);
   };
+
+  function handleCardLike(card) {
+    const isLiked = card.likes.some(i => i._id === currentUser._id);
+    api.toggleLike(card._id, !isLiked).then(newCard => {
+      setCards(state => state.map(c => (c._id === card._id ? newCard : c)));
+    });
+  }
+
+  function handleCardDelete(card) {
+    api
+      .removeCard(card._id)
+      .then(() => {
+        setCards(cards.filter(removedCard => card._id !== removedCard._id));
+      })
+      .catch(err => {
+        console.log(err);
+      });
+  }
+
+  function handleUpdateUser(data) {
+    api
+      .setUserInfo(data)
+      .then(userData => {
+        setCurrentUser(userData);
+        closeAllPopups();
+      })
+      .catch(err => {
+        console.log(err);
+      });
+  }
+
+  function handleUpdateAvatar(data) {
+    api
+      .setUserAvatar(data)
+      .then(avatarData => {
+        setCurrentUser(avatarData);
+        closeAllPopups();
+      })
+      .catch(err => {
+        console.log(err);
+      });
+  }
+
+  function handleAddPlaceSubmit(data) {
+    api
+      .setInitialCards(data)
+      .then(newCard => {
+        setCards([newCard, ...cards]);
+        closeAllPopups();
+      })
+      .catch(err => {
+        console.log(err);
+      });
+  }
   return (
     <div className="page">
-      <Header />
-      <Main
-        onEditProfile={handleEditProfileClick} // handleEditAvatarClick
-        onAddPlace={handleAddPlaceClick} // handleAddPlaceClick
-        onEditAvatar={handleEditAvatarClick} // handleEditProfileClick
-        onConfirmDelete={handleConfirmDeleteClick}
-        onCardClick={handleCardClick}
-      />
-      <Footer />
-      <EditAvatarPopup
-        isOpen={isEditAvatarPopupOpen}
-        isClose={closeAllPopups}
-        // name={name}
-        // title={editAvatarTitle}
-      />
-      <EditProfilePopup
-        isOpen={isEditProfilePopupOpen}
-        isClose={closeAllPopups}
-        // name={name}
-        // title={editProfileTitle}
-      />
-      <AddPlacePopup
-        isOpen={isAddPlacePopupOpen}
-        isClose={closeAllPopups}
-        // name={name}
-        // title={addPlaceTitle}
-      />
-      <ConfirmDeletePopup
-        isOpen={isConfirmDelCardPopupOpen}
-        onClose={closeAllPopups}
-        // name={name}
-        // title={confirmDeleteTitle}
-      />
-      <ImagePopup isClose={closeAllPopups} card={selectedCard} />
+      <CurrentUserContext.Provider value={currentUser}>
+        <Header />
+        <Main
+          onEditProfile={handleEditProfileClick}
+          onAddPlace={handleAddPlaceClick}
+          onEditAvatar={handleEditAvatarClick}
+          onConfirmDelete={handleConfirmDeleteClick}
+          onCardClick={handleCardClick}
+          onCardLike={handleCardLike}
+          onCardDelete={handleCardDelete}
+          cards={cards}
+        />
+        <Footer />
+        <EditAvatarPopup
+          isOpen={isEditAvatarPopupOpen}
+          isClose={closeAllPopups}
+          onUpdateAvatar={handleUpdateAvatar}
+        />
+        <EditProfilePopup
+          isOpen={isEditProfilePopupOpen}
+          isClose={closeAllPopups}
+          onUpdateUser={handleUpdateUser}
+        />
+        <AddPlacePopup
+          isOpen={isAddPlacePopupOpen}
+          isClose={closeAllPopups}
+          onAddPlace={handleAddPlaceSubmit}
+        />
+        <ConfirmDeletePopup
+          isOpen={isConfirmDelCardPopupOpen}
+          onClose={closeAllPopups}
+          // name={name}
+          // title={confirmDeleteTitle}
+        />
+        <ImagePopup isClose={closeAllPopups} card={selectedCard} />
+      </CurrentUserContext.Provider>
     </div>
   );
 }
 
 export default App;
-
-//
-//
-
-//     <div className="popup" id="popup_add-card">
-//       <div className="popup__container">
-//         <form name="card-add-form" className="popup__form" id="popup__form_card" noValidate>
-//           <h2 className="popup__title">Новое место</h2>
-//           <button
-//             type="submit"
-//             aria-labelledby="Добавить"
-//             className="popup__submit-card popup__button button"
-//           >
-//             Создать
-//           </button>
-//         </form>
-//         <button
-//           type="button"
-//           id="close-card"
-//           aria-label="Закрыть"
-//           className="popup__close-button button"
-//         ></button>
-//       </div>
-//     </div>
-
-//     <div className="popup" id="popup_confirm">
-//       <div className="popup__container">
-//         <form
-//           name="confirm-form"
-//           className="popup__form"
-//           id="popup__form_confirm-form"
-//           noValidate
-//         >
-//           <h2 className="popup__title">Вы уверены?</h2>
-//           <button
-//             type="submit"
-//             aria-labelledby="Да"
-//             className="popup__submit popup__button button"
-//           >
-//             Да
-//           </button>
-//         </form>
-//         <button
-//           type="button"
-//           id="close-confirm"
-//           aria-label="Закрыть"
-//           className="popup__close-button button"
-//         ></button>
-//       </div>
-//     </div>
-//     <div className="popup popup_hover-black" id="popup-image">
-//       <div className="popup__image-container">
-//         <button
-//           type="button"
-//           id="close-big-image"
-//           aria-label="Закрыть"
-//           className="popup__close-button button"
-//         ></button>
-//         <img className="popup__image" src="#" alt="" />
-//         <h2 className="popup__name-image"></h2>
-//       </div>
-//     </div>
-//   </div>

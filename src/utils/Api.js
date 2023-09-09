@@ -55,19 +55,26 @@ export class Api {
     }).then(this.statusInfo);
   }
 
-  setLike(cardId) {
+  toggleLike(cardId, like) {
     return fetch(`${this._baseUrl}/cards/${cardId}/likes`, {
-      method: 'PUT',
+      method: like ? 'PUT' : 'DELETE',
       headers: this._headers
     }).then(this.statusInfo);
   }
 
-  removeLike(cardId) {
-    return fetch(`${this._baseUrl}/cards/${cardId}/likes`, {
-      method: 'DELETE',
-      headers: this._headers
-    }).then(this.statusInfo);
-  }
+  // setLike(cardId) {
+  //   return fetch(`${this._baseUrl}/cards/${cardId}/likes`, {
+  //     method: 'PUT',
+  //     headers: this._headers
+  //   }).then(this.statusInfo);
+  // }
+
+  // removeLike(cardId) {
+  //   return fetch(`${this._baseUrl}/cards/${cardId}/likes`, {
+  //     method: 'DELETE',
+  //     headers: this._headers
+  //   }).then(this.statusInfo);
+  // }
 
   removeCard(cardId) {
     return fetch(`${this._baseUrl}/cards/${cardId}`, {

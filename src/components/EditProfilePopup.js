@@ -1,10 +1,40 @@
 import PopupWithForm from './PopupWithForm';
+import React, { useState, useEffect, useContext } from 'react';
+import { CurrentUserContext } from '../contexts/CurrentUserContext.js';
 
-function EditProfilePopup(props) {
+function EditProfilePopup(isOpen, isClose, onUpdateUser) {
+  const currentUser = useContext(CurrentUserContext);
+  const [name, setName] = useState(currentUser.name);
+  const [description, setDescription] = useState(currentUser.about);
+
+  useEffect(() => {
+    setName(currentUser.name);
+    setDescription(currentUser.about);
+  }, [currentUser]);
+
+  function handleChange(e) {
+    let value = e.target.value;
+    let inputName = e.target.name;
+    if (inputName === 'name') {
+      setName(value);
+    } else if (inputName === 'about') {
+      setDescription(value);
+    }
+  }
+
+  function handleSubmit(e) {
+    e.preventDefault();
+    onUpdateUser({
+      name,
+      about: description
+    });
+  }
+
   return (
     <PopupWithForm
-      isOpen={props.isOpen}
-      isClose={props.isClose}
+      isOpen={isOpen}
+      isClose={isClose}
+      onSubmit={handleSubmit}
       title="Редактировать профиль"
       name="fio-about-form"
       buttonText="Сохранить"
@@ -20,6 +50,8 @@ function EditProfilePopup(props) {
         maxLength="40"
         required
         autoComplete="off"
+        onChange={handleChange}
+        value={name || ''}
       />
       <span className="popup__error name-input-error"></span>
 
@@ -33,6 +65,8 @@ function EditProfilePopup(props) {
         maxLength="400"
         required
         autoComplete="off"
+        onChange={handleChange}
+        value={name || ''}
       />
       <span className="popup__error about-input-error "></span>
     </PopupWithForm>

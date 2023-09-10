@@ -78,7 +78,7 @@ function App() {
     api
       .removeCard(card._id)
       .then(() => {
-        setCards(cards.filter(cardData => cardData._id !== card._id));
+        setCards(state => state.filter(cardData => cardData._id !== card._id));
         closeAllPopups();
       })
       .catch(err => {
@@ -132,7 +132,6 @@ function App() {
           onEditAvatar={handleEditAvatarClick}
           onCardClick={handleCardClick}
           onCardLike={handleCardLike}
-          onCardDelete={handleCardDelete}
           onConfirmDelete={handleConfirmDeleteClick}
         />
         <Footer />

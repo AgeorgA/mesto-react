@@ -4,7 +4,7 @@ export class Api {
     this._headers = options.headers;
   }
 
-  statusInfo(res) {
+  _getResponseData(res) {
     if (res.ok) {
       return res.json();
     }
@@ -14,10 +14,10 @@ export class Api {
   getInitialCards() {
     return fetch(`${this._baseUrl}/cards`, {
       headers: this._headers
-    }).then(this.statusInfo);
+    }).then(this._getResponseData);
   }
 
-  setInitialCards(data) {
+  createCard(data) {
     return fetch(`${this._baseUrl}/cards`, {
       method: 'POST',
       headers: this._headers,
@@ -25,13 +25,13 @@ export class Api {
         name: data.name,
         link: data.link
       })
-    }).then(this.statusInfo);
+    }).then(this._getResponseData);
   }
 
   getUserInfo() {
     return fetch(`${this._baseUrl}/users/me`, {
       headers: this._headers
-    }).then(this.statusInfo);
+    }).then(this._getResponseData);
   }
 
   setUserInfo(data) {
@@ -42,7 +42,7 @@ export class Api {
         name: data.name,
         about: data.about
       })
-    }).then(this.statusInfo);
+    }).then(this._getResponseData);
   }
 
   setUserAvatar(data) {
@@ -52,35 +52,21 @@ export class Api {
       body: JSON.stringify({
         avatar: data.avatar
       })
-    }).then(this.statusInfo);
+    }).then(this._getResponseData);
   }
 
   toggleLike(cardId, like) {
     return fetch(`${this._baseUrl}/cards/${cardId}/likes`, {
       method: like ? 'PUT' : 'DELETE',
       headers: this._headers
-    }).then(this.statusInfo);
+    }).then(this._getResponseData);
   }
-
-  // setLike(cardId) {
-  //   return fetch(`${this._baseUrl}/cards/${cardId}/likes`, {
-  //     method: 'PUT',
-  //     headers: this._headers
-  //   }).then(this.statusInfo);
-  // }
-
-  // removeLike(cardId) {
-  //   return fetch(`${this._baseUrl}/cards/${cardId}/likes`, {
-  //     method: 'DELETE',
-  //     headers: this._headers
-  //   }).then(this.statusInfo);
-  // }
 
   removeCard(cardId) {
     return fetch(`${this._baseUrl}/cards/${cardId}`, {
       method: 'DELETE',
       headers: this._headers
-    }).then(this.statusInfo);
+    }).then(this._getResponseData);
   }
 }
 

@@ -1,28 +1,26 @@
 import PopupWithForm from './PopupWithForm';
 import React, { useState, useEffect } from 'react';
 
-function AddPlacePopup(...props) {
+function AddPlacePopup({ isOpen, onClose, onAddPlace }) {
   const [name, setName] = useState('');
   const [link, setLink] = useState('');
 
   useEffect(() => {
     setName('');
     setLink('');
-  }, [props.isOpen]);
+  }, [isOpen]);
 
-  function handleChange(e) {
-    const value = e.target.value;
-    const inputName = e.target.name;
-    if (inputName === 'name') {
-      setName(value);
-    } else if (inputName === 'link') {
-      setLink(value);
-    }
+  function handleNameChange(e) {
+    setName(e.target.value);
+  }
+
+  function handleLinkChange(e) {
+    setLink(e.target.value);
   }
 
   function handleSubmit(e) {
     e.preventDefault();
-    props.onAddPlace({
+    onAddPlace({
       name,
       link
     });
@@ -30,8 +28,8 @@ function AddPlacePopup(...props) {
 
   return (
     <PopupWithForm
-      isOpen={props.isOpen}
-      isClose={props.isClose}
+      isOpen={isOpen}
+      onClose={onClose}
       onSubmit={handleSubmit}
       title="Новое место"
       name="add-card"
@@ -48,7 +46,7 @@ function AddPlacePopup(...props) {
         maxLength="30"
         required
         autoComplete="off"
-        onChange={handleChange}
+        onChange={handleNameChange}
         value={name || ''}
       />
       <span className="popup__error card-name-input-error"></span>
@@ -61,8 +59,8 @@ function AddPlacePopup(...props) {
         className="popup__input"
         required
         autoComplete="off"
-        onChange={handleChange}
-        value={name || ''}
+        onChange={handleLinkChange}
+        value={link || ''}
       />
       <span className="popup__error card-img-input-error"></span>
     </PopupWithForm>

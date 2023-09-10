@@ -1,7 +1,7 @@
 import React, { useRef, useEffect } from 'react';
 import PopupWithForm from './PopupWithForm';
 
-function EditAvatarPopup(isOpen, isClose, onUpdateAvatar) {
+function EditAvatarPopup({ isOpen, onClose, onUpdateAvatar }) {
   const avatarRef = useRef();
 
   useEffect(() => {
@@ -18,7 +18,7 @@ function EditAvatarPopup(isOpen, isClose, onUpdateAvatar) {
   return (
     <PopupWithForm
       isOpen={isOpen}
-      isClose={isClose}
+      onClose={onClose}
       onSubmit={handleSubmit}
       title="Обновить аватар"
       name="edit_avatar_form"
@@ -33,6 +33,7 @@ function EditAvatarPopup(isOpen, isClose, onUpdateAvatar) {
         className="popup__input"
         required
         autoComplete="off"
+        ref={avatarRef}
       />
       <span className="popup__error avatar-input-error"></span>
     </PopupWithForm>

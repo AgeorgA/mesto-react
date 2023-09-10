@@ -15,12 +15,13 @@ function App() {
   const [isAddPlacePopupOpen, setIsAddPlacePopupOpen] = useState(false);
   const [isEditAvatarPopupOpen, setIsEditAvatarPopupOpen] = useState(false);
   const [isConfirmDelCardPopupOpen, setIsConfirmDelCardPopupOpen] = useState(false);
+  const [isImagePopupOpen, setIsImagePopupOpen] = useState(false);
   const [currentUser, setCurrentUser] = useState({});
   const [selectedCard, setSelectedCard] = useState(null);
   const [cards, setCards] = useState([]);
 
   useEffect(() => {
-    Promise.all([api.getUserInfo()], api.getInitialCards())
+    Promise.all([api.getUserInfo(), api.getInitialCards()])
       .then(([userInfo, initialCards]) => {
         setCurrentUser(userInfo);
         setCards(initialCards);
@@ -42,8 +43,14 @@ function App() {
     setIsEditAvatarPopupOpen(true);
   };
 
-  const handleConfirmDeleteClick = () => {
+  const handleCardClick = card => {
+    setIsImagePopupOpen(true);
+    setSelectedCard(card);
+  };
+
+  const handleConfirmDeleteClick = card => {
     setIsConfirmDelCardPopupOpen(true);
+    setSelectedCard(card);
   };
 
   const closeAllPopups = () => {
@@ -51,25 +58,28 @@ function App() {
     setIsAddPlacePopupOpen(false);
     setIsEditAvatarPopupOpen(false);
     setIsConfirmDelCardPopupOpen(false);
+    setIsImagePopupOpen(false);
     setSelectedCard(null);
-  };
-
-  const handleCardClick = data => {
-    setSelectedCard(data);
   };
 
   function handleCardLike(card) {
     const isLiked = card.likes.some(i => i._id === currentUser._id);
-    api.toggleLike(card._id, !isLiked).then(newCard => {
-      setCards(state => state.map(c => (c._id === card._id ? newCard : c)));
-    });
+    api
+      .toggleLike(card._id, !isLiked)
+      .then(newCard => {
+        setCards(state => state.map(c => (c._id === card._id ? newCard : c)));
+      })
+      .catch(err => {
+        console.log(err);
+      });
   }
 
   function handleCardDelete(card) {
     api
       .removeCard(card._id)
       .then(() => {
-        setCards(cards.filter(removedCard => card._id !== removedCard._id));
+        setCards(cards.filter(cardData => cardData._id !== card._id));
+        closeAllPopups();
       })
       .catch(err => {
         console.log(err);
@@ -102,7 +112,7 @@ function App() {
 
   function handleAddPlaceSubmit(data) {
     api
-      .setInitialCards(data)
+      .createCard(data)
       .then(newCard => {
         setCards([newCard, ...cards]);
         closeAllPopups();
@@ -116,38 +126,38 @@ function App() {
       <CurrentUserContext.Provider value={currentUser}>
         <Header />
         <Main
+          cards={cards}
           onEditProfile={handleEditProfileClick}
           onAddPlace={handleAddPlaceClick}
           onEditAvatar={handleEditAvatarClick}
-          onConfirmDelete={handleConfirmDeleteClick}
           onCardClick={handleCardClick}
           onCardLike={handleCardLike}
           onCardDelete={handleCardDelete}
-          cards={cards}
+          onConfirmDelete={handleConfirmDeleteClick}
         />
         <Footer />
         <EditAvatarPopup
           isOpen={isEditAvatarPopupOpen}
-          isClose={closeAllPopups}
+          onClose={closeAllPopups}
           onUpdateAvatar={handleUpdateAvatar}
         />
         <EditProfilePopup
           isOpen={isEditProfilePopupOpen}
-          isClose={closeAllPopups}
+          onClose={closeAllPopups}
           onUpdateUser={handleUpdateUser}
         />
         <AddPlacePopup
           isOpen={isAddPlacePopupOpen}
-          isClose={closeAllPopups}
+          onClose={closeAllPopups}
           onAddPlace={handleAddPlaceSubmit}
         />
         <ConfirmDeletePopup
           isOpen={isConfirmDelCardPopupOpen}
           onClose={closeAllPopups}
-          // name={name}
-          // title={confirmDeleteTitle}
+          onCardDelete={handleCardDelete}
+          card={selectedCard}
         />
-        <ImagePopup isClose={closeAllPopups} card={selectedCard} />
+        <ImagePopup isOpen={isImagePopupOpen} onClose={closeAllPopups} card={selectedCard} />
       </CurrentUserContext.Provider>
     </div>
   );

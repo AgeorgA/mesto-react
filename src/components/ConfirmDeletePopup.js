@@ -1,14 +1,20 @@
 import PopupWithForm from './PopupWithForm';
-function ConfirmDeletePopup(props) {
+function ConfirmDeletePopup({ card, isOpen, onClose, onCardDelete }) {
+  function handleSubmit(e) {
+    e.preventDefault();
+    onCardDelete(card);
+  }
+
   return (
     <PopupWithForm
-      isOpen={props.isOpen}
-      isClose={props.isClose}
+      isOpen={isOpen}
+      onClose={onClose}
+      onSubmit={handleSubmit}
       title="Вы уверены?"
       name="confirm-form"
       buttonText="Да"
       typeForm="popup__form_type_confirm"
-    ></PopupWithForm>
+    />
   );
 }
 
